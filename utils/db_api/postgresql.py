@@ -62,6 +62,16 @@ class Database:
         """
         await self.execute(sql, execute=True)
 
+    async def create_table_referals(self):
+        sql = """
+        CREATE TABLE IF NOT EXISTS Referals (
+            id SERIAL PRIMARY KEY,
+            user_id BIGINT NOT NULL,
+            gost_id BIGINT NOT NULL
+        );
+        """
+        await self.execute(sql, execute=True)
+
     @staticmethod
     def format_args(sql, parameters: dict):
         sql += " AND ".join(
@@ -76,6 +86,10 @@ class Database:
     async def add_game(self, user_id, winner):
         sql = "INSERT INTO Game (user_id, winner) VALUES ($1, $2) returning *"
         return await self.execute(sql, user_id, winner, fetchrow=True)
+    
+    async def add_referal(self, user_id, gost_id):
+        sql = 'INSERT INTO Referals (user_id, gost_id) VALUES ($1, $2) returning *'
+        return await self.execute(sql, user_id, gost_id, fetchrow=True)
 
     async def select_all_users(self):
         sql = "SELECT * FROM Users"
@@ -86,8 +100,18 @@ class Database:
         sql, parameters = self.format_args(sql, parameters=kwargs)
         return await self.execute(sql, *parameters, fetch=True)
 
+    async def select_referals(self, **kwargs):
+        sql = 'SELECT * FROM Referals WHERE '
+        sql, parameters = self.format_args(sql, parameters=kwargs)
+        return await self.execute(sql, *parameters, fetch=True)
+
     async def select_user(self, **kwargs):
         sql = "SELECT * FROM Users WHERE "
+        sql, parameters = self.format_args(sql, parameters=kwargs)
+        return await self.execute(sql, *parameters, fetchrow=True)
+    
+    async def count_referals(self, **kwargs):
+        sql = "SELECT COUNT(*) FROM Referals WHERE "
         sql, parameters = self.format_args(sql, parameters=kwargs)
         return await self.execute(sql, *parameters, fetchrow=True)
 
