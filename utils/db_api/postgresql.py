@@ -52,6 +52,16 @@ class Database:
         """
         await self.execute(sql, execute=True)
 
+    async def create_table_game(self):
+        sql = """
+        CREATE TABLE IF NOT EXISTS Game (
+        id SERIAL PRIMARY KEY,
+        user_id BIGINT NOT NULL,
+        winner VARCHAR(50) NOT NULL
+        );
+        """
+        await self.execute(sql, execute=True)
+
     @staticmethod
     def format_args(sql, parameters: dict):
         sql += " AND ".join(
@@ -63,9 +73,18 @@ class Database:
         sql = "INSERT INTO users (full_name, username, telegram_id) VALUES($1, $2, $3) returning *"
         return await self.execute(sql, full_name, username, telegram_id, fetchrow=True)
 
+    async def add_game(self, user_id, winner):
+        sql = "INSERT INTO Game (user_id, winner) VALUES ($1, $2) returning *"
+        return await self.execute(sql, user_id, winner, fetchrow=True)
+
     async def select_all_users(self):
         sql = "SELECT * FROM Users"
         return await self.execute(sql, fetch=True)
+
+    async def select_all_games(self, **kwargs):
+        sql = "SELECT * FROM Game WHERE "
+        sql, parameters = self.format_args(sql, parameters=kwargs)
+        return await self.execute(sql, *parameters, fetch=True)
 
     async def select_user(self, **kwargs):
         sql = "SELECT * FROM Users WHERE "

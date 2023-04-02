@@ -2,7 +2,8 @@ from aiogram import types
 from aiogram.dispatcher.filters.builtin import CommandStart
 from loader import dp, db, bot
 from data.config import ADMINS
-
+from keyboards.default.markups import stickers_markup
+from states.states import GameState
 
 @dp.message_handler(CommandStart())
 async def bot_start(message: types.Message):
@@ -20,4 +21,8 @@ async def bot_start(message: types.Message):
         await bot.send_message(chat_id=ADMINS[0], text=msg)
     # user = await db.select_user(telegram_id=message.from_user.id)
     await bot.send_message(chat_id=ADMINS[0], text=f"@{name} bazaga oldin qo'shilgan")
-    await message.answer(f"Xush kelibsiz! @{name}")
+    if name:
+        await message.answer(f"Xush kelibsiz! @{name}\n\nMenga quyidagi stikerlardan birini jo'nating!", reply_markup=stickers_markup)
+    else:
+        await message.answer(f"Xush kelibsiz!\n\nMenga quyidagi stikerlardan birini jo'nating!", reply_markup=stickers_markup)
+    await GameState.sender_user.set()
