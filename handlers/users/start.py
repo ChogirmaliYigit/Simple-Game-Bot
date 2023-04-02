@@ -1,12 +1,14 @@
 from aiogram import types
 from aiogram.dispatcher.filters.builtin import CommandStart
+from aiogram.dispatcher import FSMContext
 from loader import dp, db, bot
 from data.config import ADMINS
 from keyboards.default.markups import stickers_markup
 from states.states import GameState
 
-@dp.message_handler(CommandStart())
-async def bot_start(message: types.Message):
+@dp.message_handler(CommandStart(), state='*')
+async def bot_start(message: types.Message, state: FSMContext):
+    await state.finish()
     name = message.from_user.username
     user = await db.select_user(telegram_id=message.from_user.id)
     if user is None:
